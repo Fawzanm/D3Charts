@@ -239,15 +239,24 @@ function drawSingleNumberDiagram(divId, chartConfig, dataTable) {
             .append("g")
         ;
 
+        
+         svg.append("rect")
+         .attr("id","rect")
+        .attr("x", 0)
+        .attr("y",0)
+        .attr("width", w)
+        .attr("height", h)
 
-    //Minimum value goes here
+
+
+        //Minimum value goes here
     SingleNumberDiagram.append("text")
-        .attr("id", minDiv)
-        .text(getMax(selectedColumn))
+        .attr("id",minDiv)
+        .text("Max: "+getMax(selectedColumn))
         //.text(50)
         .attr("font-size", MIN_FONT_SIZE)
-        .attr("x", 3 * w / 4)
-        .attr("y", h / 4)
+        .attr("x", 3*w/4)
+        .attr("y", h/4)
         .style("fill", "black")
         .style("text-anchor", "middle")
         .style("lignment-baseline", "middle")
@@ -258,9 +267,8 @@ function drawSingleNumberDiagram(divId, chartConfig, dataTable) {
         .attr("id", avgDiv)
         .text(getAvg(selectedColumn))
         .attr("font-size", AVG_FONT_SIZE)
-        .attr("x", w / 2)
-        .attr("y", h / 2 + d3.select("#" + avgDiv).attr("font-size") / 5)
-        //.attr("y", svgHeight/2 )
+        .attr("x", w/2)
+        .attr("y", h/2 + d3.select("#"+avgDiv).attr("font-size")/5)
         .style("fill", "black")
         .style("text-anchor", "middle")
         .style("lignment-baseline", "middle")
@@ -268,11 +276,11 @@ function drawSingleNumberDiagram(divId, chartConfig, dataTable) {
 
     //Maximum value goes here
     SingleNumberDiagram.append("text")
-        .attr("id", maxDiv)
-        .text(getMin(selectedColumn))
+        .attr("id",maxDiv)
+        .text("Min: "+getMin(selectedColumn))
         .attr("font-size", MAX_FONT_SIZE)
-        .attr("x", 3 * w / 4)
-        .attr("y", 3 * h / 4)
+        .attr("x", 3*w/4)
+        .attr("y", 3*h/4)
         .style("fill", "black")
         .style("text-anchor", "middle")
         .style("lignment-baseline", "middle")
@@ -313,14 +321,30 @@ function drawNormalizationCurve(divId, chartConfig, dataTable) {
     //Remove current SVG if it is already there
     d3.select(svgID).remove();
 
-    //Create SVG element
+    // //Create SVG element
+    // var svg = d3.select(divId)
+    //     .append("svg")
+    //     .attr("id", svgID.replace("#", ""))
+    //     .attr("width", w)
+    //     .attr("height", h)
+    //     .append("g")
+    //     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+         //Create SVG element
     var svg = d3.select(divId)
         .append("svg")
-        .attr("id", svgID.replace("#", ""))
+        .attr("id", svgID.replace("#",""))
         .attr("width", w)
         .attr("height", h)
-        .append("g")
-        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+        ;
+
+
+         svg.append("rect")
+         .attr("id","rect")
+        .attr("x", 0)
+        .attr("width", w)
+        .attr("height",h)    
+        
 
 
     var normalizedCoordinates = NormalizationCoordinates(mathsColumn.sort(function (a, b) {
@@ -347,8 +371,10 @@ function drawNormalizationCurve(divId, chartConfig, dataTable) {
             return y(d.y);
         });
 
-    // Adds the svg canvas
-    var normalizationCurve = svg;
+  // Adds the svg canvas
+    var normalizationCurve = svg
+                            .append("g")
+                            .attr("transform","translate(" + margin.left + "," + margin.top+")");
 
     // Scale the range of the data
     x.domain(d3.extent(normalizedCoordinates, function (d) {
