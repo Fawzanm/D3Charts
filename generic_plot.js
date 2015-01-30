@@ -915,6 +915,8 @@ function redrawClicked(formID, targetChartId) {
         "yLog": false,
         "xAxisData": form.xAxis.value,
         "yAxisData": form.yAxis.value,
+        "yAxis2Data": getValue("yAxis2"),
+        "yAxis3Data": getValue("yAxis3"),
         "mapLocation": getValue('mapLocation'),
         "pointColor": form.pointColor.value,
         "pointSize": form.pointSize.value,
@@ -934,11 +936,11 @@ function redrawClicked(formID, targetChartId) {
                 case 'yAxis':
                     return form.yAxis.value;
                     break;
-                case 'yAxis':
-                    return form.yAxis.value;
+                case 'yAxis2':
+                    return form.yAxis2.value;
                     break;
-                case 'yAxis':
-                    return form.yAxis.value;
+                case 'yAxis3':
+                    return form.yAxis3.value;
                     break;
                 case 'mapLocation':
                     return form.mapLocation.value;
@@ -988,10 +990,10 @@ function createForm(dataTable, formID, chartType) {
         //createSelectFeildWithColumnNames("pointSize", dataTable, '-', formID);
     }
     else if (chartType == "lineChart") {
-        createSelectFeildWithColumnNames("xAxis", dataTable, 'C', formID);
+        createSelectFeildWithColumnNames("xAxis", dataTable, 'N', formID);
         createSelectFeildWithColumnNames("yAxis", dataTable, 'N', formID);
-        createSelectFeildWithColumnNames("pointColor", dataTable, 'C', formID);
-        createSelectFeildWithColumnNames("pointSize", dataTable, 'N', formID);
+        createSelectFeildWithColumnNames("yAxis2", dataTable, 'N', formID);
+        createSelectFeildWithColumnNames("yAxis3", dataTable, 'N', formID);
     }
     else if (chartType == "map") {                                                      ////add this
         createSelectFeildWithColumnNames("mapLocation", dataTable, 'C', formID);
@@ -1192,3 +1194,185 @@ function drawMarkersMap(array) {
     chart.draw(data, options);
 }
 ;
+
+
+function drawLineChart(divId, chartConfig, dataTable) {
+
+    var w = chartConfig.chartWidth;     //Width and height and margins
+    var h = chartConfig.chartHight;
+    var margin = {top: 20, right: 80, bottom: 30, left: 50};
+
+    var dataSet = dataTable.data.map(function (d) { //extract dataset
+        return {"data": d, "config": chartConfig}
+    });
+
+    var xAxisID = dataSet[0].config.xAxisData;              //Identifying the Column number corresponding to the selected fields from the form
+    var yAxisID = dataSet[0].config.yAxisData;
+    var yAxis2ID = dataSet[0].config.yAxis2Data;
+    var yAxis3ID = dataSet[0].config.yAxis3Data;
+
+    var xAxisName = dataTable.metadata.names[xAxisID];                    //Identify Column Names of the columns selected from the form
+    var yAxisName = dataTable.metadata.names[yAxisID];
+    var yAxis2Name = dataTable.metadata.names[yAxis2ID];
+    var yAxis3Name = dataTable.metadata.names[yAxis3ID];
+
+    var columnNames = [xAxisName, yAxisName, yAxis2Name, yAxis3Name];
+
+    dataSet.sort(function (a, b) {                             //sort the data set with respect to the x coordinates
+        return a.data[xAxisID] - b.data[xAxisID];
+    });
+
+    var data = [];//empty array to load the selected data and organize in the required format
+    for (var i = 0; i < dataSet.length; i++) {
+        data.push({
+            key: dataSet[i].data[xAxisID],      //x axis data
+            y1: dataSet[i].data[yAxisID],       //y axis 1 data
+            y2: dataSet[i].data[yAxis2ID],      //y axis 2 data
+            y3: dataSet[i].data[yAxis3ID]       //y axis 3 data
+        });
+    }
+
+    var svgID = divId + "_svg";     //svg container in which the chart shall be drawn
+    d3.select(svgID).remove();      //Remove current SVG if it is already there
+
+    var svg = d3.select(divId)      //Create SVG element
+        .append("svg")
+        .attr("id", svgID.replace("#", ""))
+        .attr("width", w + 100)     //width
+        .attr("height", h + 50)     //height
+        .append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");    //move to the middle of the screen in given dimensions
+
+    svg.append("rect")              //a colored rectangle to decorate the chart
+        .attr("x", 0).attr("y", 0)
+        .attr("width", w).attr("height", h)     //width and height
+        .attr("fill", "rgba(222,235,247, 0.5)") //color
+
+    var dropDown = document.getElementById("interpolateOp");        //select dropdown box Element
+    var option = dropDown.options[dropDown.selectedIndex].text;     //get Text selected in drop down box to the 'Option' variable
+    var mode=option;    //interpolation mode(linear, basis, step before, step after, cardinal etc
+
+    var ordinal = d3.scale.ordinal();   //scale to map y coordinates
+
+    var x = d3.scale.linear()           //scale for x axis
+        .range([0, w]);
+
+    var y = d3.scale.linear()           //scale for y axis
+        .range([h, 0]);
+
+    var xAxis = d3.svg.axis()           //define x axis
+        .scale(x)
+        .orient("bottom");
+
+    var yAxis = d3.svg.axis()           //define y axis
+        .scale(y)
+        .orient("left");
+
+    var line = d3.svg.line()            //svg element to connect the coordinates as a path
+        .x(function (d) {
+            return x(d.key);            //scale x coordinates
+        })
+        .y(function (d) {
+            return y(d.value);          //scale y coordinates
+        });
+
+    ordinal.domain(d3.keys(data[0]).filter(function (d) {
+        return d !== "key";                                   //get key list as the scale domain except the one which is exactly "key" as it should be the x variable set
+    }));
+
+    x.domain(d3.extent(data, function (d) {
+        return d.key;                                         //define the domain of x scale
+    }));
+
+    var graphs = ordinal.domain().map(function (name) {          //organize data in the format, {name,{key,value}}, {key,value}-values
+        return {
+            name: name,
+            values: data.map(function (d) {
+                return {key: d.key, value: +d[name]};
+            })
+        };
+    });
+
+    y.domain([          //define the domain of y scale i.e- minimum value of all y coordinates to max of all y coordinates
+        d3.min(graphs, function (c) {
+            return d3.min(c.values, function (v) {
+                return v.value;
+            });
+        }),
+        d3.max(graphs, function (c) {
+            return d3.max(c.values, function (v) {
+                return v.value;
+            });
+        })
+    ]);
+
+    svg.append("g")         //append x axis to the chart and move(translate to the bottom
+        .attr("class", "x axis")
+        .attr("transform", "translate(0," + h + ")")
+        .call(xAxis)
+        .append("text")         //append the label for the x axis
+        .attr("x", w)       //move to the right hand end
+        .attr("y", 25)      //set as -10 to move on top of the x axis
+        .style("text-anchor", "end")
+        .style("font-weight", "bold")
+        .text(columnNames[0]);
+
+    svg.append("g")             //append y axis
+        .attr("class", "y axis")
+        .call(yAxis)
+        .append("text")         //y axis label
+        .attr("transform", "rotate(-90)")   //rotate 90 degrees
+        .attr("y", 6)
+        .attr("dy", ".71em")    //distance from y axis to the label
+        .style("text-anchor", "end")
+        .style("font-weight", "bold")
+        .text("Value");
+
+    var graph = svg.selectAll(".graph")     //create graphs for the data set
+        .data(graphs)
+        .enter().append("g")
+        .attr("class", "label");    //change text style
+
+    graph.append("path")                    //add path to the graphs
+        .attr("class", "line")
+        .attr("d", function (d) {
+            return line.interpolate(mode)(d.values);    //interpolate in given mode and render line
+        })
+        .style("stroke", function (d, i) {
+            return getColor(i % 4)              //get different colors for each graph
+        });
+
+    graph.append("text")
+        .datum(function (d) {       //to bind data to a single svg element
+            return {name: d.name, value: d.values[d.values.length - 1]};
+        })
+        .attr("transform", function (d) {     //show the label of each graph at the end of each ones last value coordinate
+            return "translate(" + x(d.value.key) + "," + y(d.value.value) + ")";
+        })
+        .attr("x", 3)
+        .attr("dy", ".35em")
+        .text(function (d, i) {
+            return columnNames[i + 1];
+        });
+
+    function getColor(count) {  //returns different colors for each data set
+
+        //Select colors from each color picker Element
+        var c1 = document.getElementById("color1");
+        var c2 = document.getElementById("color2");
+        var c3 = document.getElementById("color3");
+        var c4 = document.getElementById("color4");
+
+        count = count % 4;
+        if (count == 0)
+            return "#" + c1.color;
+        if (count == 1)
+            return "#" + c2.color;
+        if (count == 2)
+            return "#" + c3.color;
+        if (count == 3)
+            return "#" + c4.color;
+        else
+            return d3.rgb(Math.floor(Math.random() * 256), Math.floor(Math.random() * 256), Math.floor(Math.random() * 256));  //random color for 5th chart onwards
+    }
+}

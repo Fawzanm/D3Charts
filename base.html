@@ -4,7 +4,9 @@
     <meta charset="utf-8">
     <title>D3--</title>
     <script type="text/javascript" src="scripts/js/d3.min.js"></script>
-    <!--<script type='text/javascript' src='https://www.google.com/jsapi'></script>-->
+    <script type='text/javascript' src='https://www.google.com/jsapi'></script>
+    <script type="text/javascript" src="scripts/jscolor/jscolor.js"></script>
+
     <!--&lt;!&ndash; Bootstrap core JavaScript-->
     <!--================================================== &ndash;&gt;-->
     <!-- Placed at the end of the document so the pages load faster -->
@@ -102,10 +104,24 @@
 
                 <form action="" id="lineChartForm">
                 </form>
+                <p>Select Graph Colors :</p>
+                <input id="color1" class="color" size="3" value="85ADFF">
+                <input id="color2" class="color" size="3" value="FF4040">
+                <input id="color3" class="color" size="3" value="7DC961"><br><br>
+
+
+                <p>Interpolation Method : </p>
+                <select id="interpolateOp" style="appearance: checkbox-group">
+                    <option>linear</option>
+                    <option>cardinal</option>
+                    <option>basis</option>
+                    <option>monotone</option>
+                    <option>step-before</option>
+                    <option>step-after</option>
+                </select>
 
                 <div class="buttonContainer">
-                    <input type="button" class="btn btn-primary" onclick="redrawClicked('lineChartForm', '#lineChart')"
-                           value="Redraw">
+                    <input type="button" onclick="redrawClicked('lineChartForm', '#lineChart')" value="Redraw">
                 </div>
             </div>
         </div>
