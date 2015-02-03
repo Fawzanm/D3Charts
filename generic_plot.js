@@ -84,7 +84,8 @@ function drawScatterPlot(divId, chartConfig, dataTable) {
         .selectAll("g")
         .data(dataset)
         .enter()
-        .append("g");
+        .append("g")
+       
     configurePoints(group1, xScale, yScale, rScale, colorScale);
     configurePointLabels(group1, xScale, yScale);
 }
@@ -124,6 +125,7 @@ function drawBarChart(divId, chartConfig, dataTable) {
         .data(dataset)
         .enter().append("rect")
         .attr("class", "bar")
+        .transition()
         .attr("x", function (d) {
             //console.log(d.data[d.config.xAxisData]);
             return xScale(d.data[d.config.xAxisData]);
@@ -134,7 +136,15 @@ function drawBarChart(divId, chartConfig, dataTable) {
         })
         .attr("height", function (d) {
             return height - yScale(d.data[d.config.yAxisData]) - padding;
-        });
+        })
+        .delay(function(d, i) {
+        return i * 100;
+        })
+        .duration(10000)
+        .ease('elastic');
+
+	
+	   
 }
 
 function drawGroupBarChart(divId, chartConfig, dataTable) {
@@ -183,6 +193,8 @@ function drawGroupBarChart(divId, chartConfig, dataTable) {
         .attr("height", function (d) {
             return height - yScale(d.data[d.config.yAxisData]) - padding;
         });
+
+	
 }
 
 /**
@@ -846,13 +858,15 @@ function configurePoints(group1, xScale, yScale, rScale, colorScale) {
                 return 5;
             }
         })
+
         .style("fill", function (d) {
             if (d.config.pointColor != -1) {
                 return colorScale(d.data[d.config.pointColor]);
             } else {
                 return 2;
             }
-        });
+        })
+
 }
 
 
