@@ -147,56 +147,6 @@ function drawBarChart(divId, chartConfig, dataTable) {
 	   
 }
 
-function drawGroupBarChart(divId, chartConfig, dataTable) {
-    var width = chartConfig.chartWidth;
-    var height = chartConfig.chartHight;
-    var padding = chartConfig.padding;
-
-    var dataset = dataTable.data.map(function (d) {
-        return {"data": d, "config": chartConfig}
-    });
-
-    var plotCtx = createScales(dataset, chartConfig, dataTable);
-    var xScale = plotCtx.xScale;
-    var yScale = plotCtx.yScale;
-
-
-    var svgID = divId + "_svg";
-    //Remove current SVG if it is already there
-    d3.select(svgID).remove();
-
-
-    var svg = d3.select(divId)
-        .append("svg")
-        .attr("id", svgID.replace("#", ""))
-        .attr("width", width)
-        .attr("height", height);
-
-    createXYAxises(svg, plotCtx, chartConfig, dataTable);
-
-    //Now we really drwa by creating rectangles. The layout is done such a way that (0,0)
-    // starts from bottom left corner as usual.
-    //TODO handle multiple column groups using color
-    //http://bl.ocks.org/mbostock/3887051
-    svg.selectAll(".bar")
-        .data(dataset)
-        .enter().append("rect")
-        .attr("class", "bar")
-        .attr("x", function (d) {
-            //console.log(d.data[d.config.xAxisData]);
-            return xScale(d.data[d.config.xAxisData]);
-        })
-        .attr("width", xScale.rangeBand())
-        .attr("y", function (d) {
-            return yScale(d.data[d.config.yAxisData]);
-        })
-        .attr("height", function (d) {
-            return height - yScale(d.data[d.config.yAxisData]) - padding;
-        });
-
-	
-}
-
 /**
  * By : Fawsan M. <--fawsanm@wso2.com-->
  * function to draw the Single Number Diagram
@@ -399,7 +349,8 @@ function drawNormalizationCurve(divId, chartConfig, dataTable) {
     // Add the valueLines path.
     normalizationCurve.append("path")
         .attr("class", "line")
-        .attr("d", valueLines(normalizedCoordinates));
+        .attr("d", valueLines(normalizedCoordinates))
+	;
 
     // Add the X Axis
     normalizationCurve.append("g")
@@ -474,7 +425,8 @@ function drawTableChart(divId, chartConfig, dataTable) {
 
     var colorRows = d3.scale.linear()
         .domain([2.5, 4])
-        .range(['#F5BFE8', '#E305AF']);
+        .range(['#F5BFE8', '#E305AF'])
+        ;
 
     var fontSize = d3.scale.linear()
             .domain([0, 100])
@@ -527,6 +479,8 @@ function drawTableChart(divId, chartConfig, dataTable) {
                 .text(function (d, i) {
                     return d;
                 })
+                .transition()
+                
                 .style("font-size", function (d, i) {
 
 
@@ -546,6 +500,11 @@ function drawTableChart(divId, chartConfig, dataTable) {
                     return 'rgba(' + colors[i].r + ',' + colors[i].g + ',' + colors[i].b + ',' + alpha(d) + ')';
 
                 })
+                .delay(function(d, i) {
+                return i * 500;
+                })
+                .duration(1000)
+                .ease('linear')
             ;
 
         } else if (isColorBasedSet && !isFontBasedSet) {
@@ -563,6 +522,7 @@ function drawTableChart(divId, chartConfig, dataTable) {
                 .text(function (d, i) {
                     return d;
                 })
+                .transition()
                 .style('background-color', function (d, i) {
 
                     //This is where the color is decided for the cell
@@ -576,6 +536,11 @@ function drawTableChart(divId, chartConfig, dataTable) {
                     return 'rgba(' + colors[i].r + ',' + colors[i].g + ',' + colors[i].b + ',' + alpha(d) + ')';
 
                 })
+                .delay(function(d, i) {
+                return i * 500;
+                })
+                .duration(1000)
+                .ease('linear')
             ;
 
         }
@@ -594,19 +559,28 @@ function drawTableChart(divId, chartConfig, dataTable) {
                 .text(function (d, i) {
                     return d;
                 })
+                .transition()
                 .style("font-size", function (d, i) {
 
                     fontSize.domain([
                         getMin(parseColumnFrom2DArray(tableData, i)),
                         getMax(parseColumnFrom2DArray(tableData, i))]);
                     return fontSize(d) + "px";
-                });
+                })
+                .delay(function(d, i) {
+                return i * 500;
+                })
+                .duration(1000)
+                .ease('linear')
+                ;
 
         }
         else {
 
             //appending the rows inside the table body
-            rows.style('background-color', function (d, i) {
+            rows
+            .transition()
+            .style('background-color', function (d, i) {
 
                 colorRows.domain([
                     getMin(parseColumnFrom2DArray(tableData, chartConfig.xAxisData)),
@@ -621,6 +595,11 @@ function drawTableChart(divId, chartConfig, dataTable) {
                         getMax(parseColumnFrom2DArray(tableData, i))]);
                     return fontSize(d) + "px";
                 })
+            .delay(function(d, i) {
+                return i * 500;
+                })
+                .duration(1000)
+                .ease('linear')
             ;
 
 
