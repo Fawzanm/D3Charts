@@ -349,7 +349,13 @@ function drawNormalizationCurve(divId, chartConfig, dataTable) {
     // Add the valueLines path.
     normalizationCurve.append("path")
         .attr("class", "line")
+        .transition()
         .attr("d", valueLines(normalizedCoordinates))
+        .delay(function(d, i) {
+        return i * 100;
+        })
+        .duration(10000)
+        .ease('linear');
 	;
 
     // Add the X Axis
@@ -501,7 +507,7 @@ function drawTableChart(divId, chartConfig, dataTable) {
 
                 })
                 .delay(function(d, i) {
-                return i * 500;
+                return i * 50;
                 })
                 .duration(1000)
                 .ease('linear')
@@ -537,7 +543,7 @@ function drawTableChart(divId, chartConfig, dataTable) {
 
                 })
                 .delay(function(d, i) {
-                return i * 500;
+                return i * 50;
                 })
                 .duration(1000)
                 .ease('linear')
@@ -568,7 +574,7 @@ function drawTableChart(divId, chartConfig, dataTable) {
                     return fontSize(d) + "px";
                 })
                 .delay(function(d, i) {
-                return i * 500;
+                return i * 50;
                 })
                 .duration(1000)
                 .ease('linear')
@@ -596,7 +602,7 @@ function drawTableChart(divId, chartConfig, dataTable) {
                     return fontSize(d) + "px";
                 })
             .delay(function(d, i) {
-                return i * 500;
+                return i * 50;
                 })
                 .duration(1000)
                 .ease('linear')
