@@ -64,7 +64,7 @@ svg {
     background-color: AliceBlue;
 }
 
-path {
+#normalizationCurve path {
     stroke: steelblue;
     stroke-width: 2;
     fill: none;
